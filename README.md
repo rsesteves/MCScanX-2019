@@ -6,7 +6,7 @@ MCScanX is a multi-alignment tool for a set of genomes to be compared and analyz
 
 Citations
 ---------
-**MCScan**
+**MCScanX**
 
 Wang Y, Tang H, DeBarry JD, Tan X, Li J, Wang X, Lee TH, Jin H, Marler B, Guo H, Kissinger JC, Paterson AH. (2012) MCScanX: a toolkit for detection and evolutionary analysis of gene synteny and collinearity. Nucleic Acids Res, 40(7): e49.
 

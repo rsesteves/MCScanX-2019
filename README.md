@@ -1,4 +1,4 @@
-# MCScanX-2019
+# MCScanX-ATHALY-2019
 
 Introduction
 ---------

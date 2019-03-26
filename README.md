@@ -48,26 +48,131 @@ NCBI blast program will help create the required files for alignment and ready f
     export PATH=$PATH:$HOME/ncbi-blast-2.2.31+/bin
 
 **Installing MCScanX**
-<s>
 
+    wget http://chibba.pgml.uga.edu/mcscan2/MCScanX.zip
+    unzip MCScanX.zip
+    cd MCScanX
+    make
 
-Python 2.7 will be used to run some of the modules in the protocol. Download python by typing the lines in the Ubuntu terminal.
+The following errors could occur:
+- Error 1
+    msa.cc: In function ‘void msa_main(const char*)’:
+    msa.cc:289:9: error: ‘chdir’ was not declared in this scope
+     if (chdir(html_fn)<0)
+         ^~~~~
+    msa.cc:289:9: note: suggested alternative: ‘mkdir’
+     if (chdir(html_fn)<0)
+         ^~~~~
+         mkdir
+    makefile:2: recipe for target 'mcscanx' failed
+    make: *** [mcscanx] Error 1
 
-    sudo apt install python2.7
-    sudo apt-get install python-dev  \
-     build-essential libssl-dev libffi-dev \
-     libxml2-dev libxslt1-dev zlib1g-dev \
-     python-pip -y
-    sudo apt-get update -y
+Solution:
+Add this to top of msa.cc.
+    nano msa.cc
+    #include <unistd.h>
+    /* Author: Yupeng Wang <wyp1125@uga.edu> March 31, 2011
+    * This is the new code for generating and printing multiple alignment based on progressive alignment
+    */
+    #include "msa.h"
+    ...
+Save
+    $make
 
+- Error 2
+    hemzy@DESKTOP-J3FNUQU:~/MCScanX$ make
+    g++ struct.cc mcscan.cc read_data.cc out_utils.cc dagchainer.cc msa.cc permutation.cc -o MCScanX
+    g++ struct.cc mcscan_h.cc read_homology.cc out_homology.cc dagchainer.cc msa.cc permutation.cc -o MCScanX_h
+    g++ struct.cc dup_classifier.cc read_data.cc out_utils.cc dagchainer.cc cls.cc permutation.cc -o duplicate_gene_classifier
+    g++ dissect_multiple_alignment.cc -o downstream_analyses/dissect_multiple_alignment
+    dissect_multiple_alignment.cc: In function ‘int main(int, char**)’:
+    dissect_multiple_alignment.cc:252:17: error: ‘getopt’ was not declared in this scope
+        while ((c = getopt(argc, argv, "g:c:o:")) != -1)
+                    ^~~~~~
+    dissect_multiple_alignment.cc:252:17: note: suggested alternative: ‘getpt’
+        while ((c = getopt(argc, argv, "g:c:o:")) != -1)
+                    ^~~~~~
+                    getpt
+    dissect_multiple_alignment.cc:257:32: error: ‘optarg’ was not declared in this scope
+                sprintf(gpath,"%s",optarg);
+                                    ^~~~~~
+    dissect_multiple_alignment.cc:257:32: note: suggested alternative: ‘opath’
+                sprintf(gpath,"%s",optarg);
+                                    ^~~~~~
+                                    opath
+    dissect_multiple_alignment.cc:269:17: error: ‘optopt’ was not declared in this scope
+                if (optopt!='g' || optopt!='c' || optopt!='o')
+                    ^~~~~~
+    dissect_multiple_alignment.cc:269:17: note: suggested alternative: ‘getpt’
+                if (optopt!='g' || optopt!='c' || optopt!='o')
+                    ^~~~~~
+                    getpt
+    makefile:2: recipe for target 'mcscanx' failed
+    make: *** [mcscanx] Error 1
+ 
+ Solution:
+ Add #include <getopt.h> to  detect_collinear_tandem_arrays.cc and dissect_multiple_alignment.cc, then add #include <unistd.h> to msa.cc.
 
+    nano detect_collinear_tandem_arrays.cc
+    #include <getopt.h>
+
+    nano dissect_multiple_alignment.cc
+    #include <getopt.h>
+
+Save
+
+    $make
+
+Issues did not come up, but for some users it may. Solutions can be found via MCScanX github.
 
 Getting Started
 ---------
+**Datasets of Interest**
+- Arabidopsis Thaliana and Lyrata
+Arabidopsis Thaliana(ATH) and Arabidopsis Lyrata(ALY) were downloaded through Phytozome. An account was created to access the Phytozome data. The following data sets were downloaded, as mentioned in the reference, to the windows system:
+
+Athaliana_447_Araport11.gene.gff3.gz
+Athaliana_447_Araport11.protein_primaryTranscriptOnly.fa.gz
+Alyrata_384_v2.1.gene.gff3.gz
+Alyrata_384_v2.1.protein_primaryTranscriptOnly.fa.gz
+
+A directory was made in MCScanX/data/ directory called ATHpALYp, and another folder named results was made with the lines below (assuming to be in the data folder).
+
+    mkdir ATHpALYp
+    cd ATHpALYp
+    mkdir results
+
+The files were then copied into Ubuntu with the line used below (assuming to be in the ATHpALYp folder):
+
+    cp /mnt/c/Users/Dumbo/Downloads/*.gz ./
+
+The files above were gunziped by the lines below:
+
+    gunzip *.gz
+
+The set-up looked like the below:
+
+    hemzy@DESKTOP-J3FNUQU:~/MCScanX/data/ATHpALYp$ ls
+    Alyrata_384_v2.1.gene.gff3                         Athaliana_447_Araport11.gene.gff3
+    Alyrata_384_v2.1.protein_primaryTranscriptOnly.fa  Athaliana_447_Araport11.protein_primaryTranscriptOnly.fa
+
+- Making a database
+The FASTA files were concatenated together to be used as a protein database, soon to be used for blasting RNAseq data to itself. The lines were used below.
+
+    cat Athaliana_447_Araport11.protein_primaryTranscriptOnly.fa Alyrata_384_v2.1.protein_primaryTranscriptOnly.fa > ATHpALYp.fa
+
+    makeblastdb -in ATHpALYp.fa -dbtype prot
+
+The FASTA files were then "blasted" against the created database and will be aligned. The line below was used and ran overnight, or approximately 2-4 hours (on my machine).
+
+    blastp -query ATHpALYp.fa -db ATHpALYp.fa -evalue 1e-10 -max_target_seqs 5 -outfmt 6 -out ATHpALYp.blast -num_threads 2
+
+
+
+
 
 The Works
 ---------
-**Pairwise Synteny Search**
+****
 - ATH and ALY orthologs.
 We will be comparing the ready-made files for synteny using the ortholog command from jcvi.compara.catalog. Last is used to compare the data, and the option ``--no_strip_names`` was used in order to remove the isoform mark. Wi
-- ATH and ATH downstream analyses

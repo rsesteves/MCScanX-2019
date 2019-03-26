@@ -1,4 +1,4 @@
-# MCScanX-ATHALY-2019
+# MCScanX-2019
 
 Introduction
 ---------
@@ -70,3 +70,4 @@ The Works
 **Pairwise Synteny Search**
 - ATH and ALY orthologs.
 We will be comparing the ready-made files for synteny using the ortholog command from jcvi.compara.catalog. Last is used to compare the data, and the option ``--no_strip_names`` was used in order to remove the isoform mark. Wi
+- ATH and ATH downstream analyses
